@@ -1,5 +1,6 @@
-package com.bruce.SEBGoldTrading;
+package com.bruce.SEBGoldTrading.response;
 
+import com.bruce.SEBGoldTrading.SebOrderBook;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 

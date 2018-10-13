@@ -1,10 +1,14 @@
-package com.bruce.SEBGoldTrading;
+package com.bruce.SEBGoldTrading.controller;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.bruce.SEBGoldTrading.SebOrderDispatcher;
+import com.bruce.SEBGoldTrading.response.SebBadRequestException;
+import com.bruce.SEBGoldTrading.response.SebDepthResponse;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +38,7 @@ public class SebTradingController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 400, message = "Bad request parameter")})
-    public SebOrderDispatcher.OrderState order(
+    public ResponseEntity<SebOrderDispatcher.ActionState> order(
             @RequestParam(value="side",     defaultValue="BUY") SebOrderDispatcher.Side side,
             @RequestParam(value="volume",   defaultValue="0") int volume,
             @RequestParam(value="price",    defaultValue="0.0") double price) throws SebBadRequestException {
@@ -42,6 +46,7 @@ public class SebTradingController {
         if (volume <= 0 || price <= 0) throw new SebBadRequestException();
 
         // TODO send order to match engine
-        return orderDispatcher.newOrder(side, price, volume);
+        SebOrderDispatcher.ActionState state = orderDispatcher.newOrder(side, price, volume);
+        return ResponseEntity.ok(state);
     }
 }

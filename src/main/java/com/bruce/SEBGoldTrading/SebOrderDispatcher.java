@@ -5,13 +5,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class SebOrderDispatcher {
 
-    enum Side {
+    public enum Side {
         BUY, SELL
     }
 
-    enum OrderState {
+    /**
+     * State of the insert or delete actions
+     */
+    public enum ActionState {
         INS_CONF, INS_FAIL, INS_PEND,
         DEL_CONF, DEL_FAIL, DEL_PEND
+    }
+
+    /**
+     * State of the order
+     */
+    enum OrderState {
+        DELETED,
+        ON_MARKET
     }
 
     private final SebOrderBook orderBook;
@@ -32,7 +43,7 @@ public class SebOrderDispatcher {
      * @param volume
      * @return the order state
      */
-    public OrderState newOrder(Side side, double price, int volume) {
+    public ActionState newOrder(Side side, double price, int volume) {
 
         int remainingVolume = volume;
 
@@ -40,7 +51,7 @@ public class SebOrderDispatcher {
             remainingVolume = processOrder(side, price, remainingVolume);
         }
 
-        return OrderState.INS_CONF;
+        return ActionState.INS_CONF;
 
     }
 
@@ -48,37 +59,39 @@ public class SebOrderDispatcher {
 
         switch (side) {
             case BUY:
-                /**
-                 *  If new bid price is lower than the lowest ask,
-                 *  just add it to the bid depth
-                 **/
+
                 double bestAsk = orderBook.getBestAsk();
 
                 if ( price < bestAsk ) {
+                    /**
+                     *  If new bid price is lower than the lowest ask,
+                     *  just add it to the bid depth
+                     **/
                     orderBook.addToBidDepth(price, volume); // no trade
                     return 0;
-                }
-                /**
-                 *  Else if bid price equals or greater than lowest ask,
-                 *  execute the order
-                 **/
-                else {
+                } else {
+                    /**
+                     *  Else if bid price is equal or greater than lowest ask,
+                     *  execute the order
+                     **/
                     return orderBook.executeBuyOrder(bestAsk, volume);
                 }
             case SELL:
-                /**
-                 *  If new ask price is higher than the highest bid,
-                 *  just add it to the ask depth
-                 **/
+
                 double bestBid = orderBook.getBestBid();
+
                 if ( bestBid < price ) {
+                    /**
+                     *  If new ask price is higher than the highest bid,
+                     *  just add it to the ask depth
+                     **/
                     orderBook.addToAskDepth(price, volume); // no trade
                     return 0;
-                }
-                /**
-                 *  Else try to execute a quantity of the order
-                 **/
-                else {
+                } else {
+                    /**
+                     *  Else if ask price is equal or lower than highest ask,
+                     *  execute the order
+                     **/
                     return orderBook.executeSellOrder(bestBid, volume);
                 }
             default:
