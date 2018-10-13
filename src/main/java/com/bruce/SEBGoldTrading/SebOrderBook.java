@@ -46,6 +46,12 @@ public class SebOrderBook {
         return askDepth.firstKey();
     }
 
+    /**
+     * Increment the volume at a given bid price level
+     *
+     * @param price
+     * @param volume
+     */
     public void addToBidDepth(double price, int volume) {
         Integer oldVolume = bidDepth.get(price);
         if (oldVolume == null)
@@ -54,6 +60,12 @@ public class SebOrderBook {
             setOneBid(price, volume + oldVolume);
     }
 
+    /**
+     * Increment the volume at a given ask price level
+     *
+     * @param price
+     * @param volume
+     */
     public void addToAskDepth(double price, int volume) {
         Integer oldVolume = askDepth.get(price);
         if (oldVolume == null)
@@ -62,6 +74,56 @@ public class SebOrderBook {
             setOneAsk(price, volume + oldVolume);
     }
 
+    /**
+     * Execute a buy order on a given price
+     *
+     * @param price
+     * @param volume
+     * @return volume that remains un-executed
+     */
+    public Integer executeBuyOrder(double price, int volume) {
+
+        Integer oldVolume = askDepth.get(price);
+        int newVolume = oldVolume - volume;
+
+        if (newVolume > 0)
+            setOneAsk(price, newVolume);
+        else
+            removeOneAsk(price);
+
+        if (newVolume >= 0)
+            return 0;
+        else
+            return -newVolume;
+    }
+
+    /**
+     * Execute a sell order on a given price
+     *
+     * @param price
+     * @param volume
+     * @return volume that remains un-executed
+     */
+    public Integer executeSellOrder(double price, int volume) {
+
+        Integer oldVolume = bidDepth.get(price);
+        int newVolume = oldVolume - volume;
+
+        if (newVolume > 0)
+            setOneBid(price, newVolume);
+        else
+            removeOneBid(price);
+
+        if (newVolume >= 0)
+            return 0;
+        else
+            return -newVolume;
+    }
+
+    /*
+     *  Private
+     */
+
     private void setOneBid(double price, int volume) {
         bidDepth.put(price, volume);
     }
@@ -69,5 +131,14 @@ public class SebOrderBook {
     private void setOneAsk(double price, int volume) {
         askDepth.put(price, volume);
     }
+
+    private void removeOneBid(double price) {
+        bidDepth.remove(price);
+    }
+
+    private void removeOneAsk(double price) {
+        askDepth.remove(price);
+    }
+
 
 }

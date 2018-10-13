@@ -18,7 +18,7 @@ public class SebTradingController {
     private final AtomicLong counter = new AtomicLong(); //remove
 
     @Autowired
-    private SebMatchEngine matchEngine;
+    private SebOrderDispatcher orderDispatcher;
 
     @RequestMapping(value = "/depth", method = GET )
     @ApiResponse(code = 200, message = "OK")
@@ -26,7 +26,7 @@ public class SebTradingController {
 
         return new SebDepthResponse(
                 counter.incrementAndGet(),
-                matchEngine.getOrderBook()
+                orderDispatcher.getOrderBook()
         );
     }
 
@@ -34,14 +34,14 @@ public class SebTradingController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 400, message = "Bad request parameter")})
-    public SebMatchEngine.OrderState order(
-            @RequestParam(value="side",     defaultValue="BUY") SebMatchEngine.Side side,
+    public SebOrderDispatcher.OrderState order(
+            @RequestParam(value="side",     defaultValue="BUY") SebOrderDispatcher.Side side,
             @RequestParam(value="volume",   defaultValue="0") int volume,
             @RequestParam(value="price",    defaultValue="0.0") double price) throws SebBadRequestException {
 
         if (volume <= 0 || price <= 0) throw new SebBadRequestException();
 
         // TODO send order to match engine
-        return matchEngine.newOrder(side, price, volume);
+        return orderDispatcher.newOrder(side, price, volume);
     }
 }
