@@ -48,29 +48,28 @@ public class SebOrderBook {
         return askDepth.firstKey();
     }
 
-// remove
-//    public void addOneBid(double price, int volume) {
-//        Integer currentBidVolume = bidDepth.get(price);
-//        if (currentBidVolume == null)
-//            setOneBid(price, volume);
-//        else
-//            setOneBid(price, volume + currentBidVolume);
-//    }
+    public void addToBidDepth(double price, int volume) {
+        Integer currentBidVolume = bidDepth.get(price);
+        if (currentBidVolume == null)
+            setOneBid(price, volume);
+        else
+            setOneBid(price, volume + currentBidVolume);
+    }
 
-//// remove
-//    public void addOneAsk(double price, int volume) {
-//        Integer currentAskVolume = askDepth.get(price);
-//        if (currentAskVolume == null)
-//            setOneAsk(price, volume);
-//        else
-//            setOneAsk(price, volume + currentAskVolume);
-//    }
+    public void addToAskDepth(double price, int volume) {
+        Integer currentAskVolume = askDepth.get(price);
+        if (currentAskVolume == null)
+            setOneAsk(price, volume);
+        else
+            setOneAsk(price, volume + currentAskVolume);
+    }
 
-    public void setOneBid(double price, int volume) {
+    private void setOneBid(double price, int volume) {
         bidDepth.put(price, volume);
     }
 
-    public void setOneAsk(double price, int volume) {
+    private void setOneAsk(double price, int volume) {
         askDepth.put(price, volume);
     }
+
 }

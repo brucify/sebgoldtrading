@@ -31,8 +31,9 @@ public class SebMatchEngine {
                 /**
                  *  If new bid price is lower than the lowest ask, just add it to the bid depth
                  **/
-                if (price < orderBook.getBestAsk()) {
-                    return addToBidDepth(price, volume); // no trade
+                if ( price < orderBook.getBestAsk() ) {
+                    orderBook.addToBidDepth(price, volume); // no trade
+                    return SebMatchEngine.OrderState.INS_CONF;
                 }
                 /**
                  *  Else try to execute a quantity of the order
@@ -45,8 +46,9 @@ public class SebMatchEngine {
                 /**
                  *  If new ask price is higher than the highest bid, just add it to the ask depth
                  **/
-                if (orderBook.getBestBid() < price) {
-                    return addToAskDepth(price, volume); // no trade
+                if ( orderBook.getBestBid() < price ) {
+                    orderBook.addToAskDepth(price, volume); // no trade
+                    return SebMatchEngine.OrderState.INS_CONF;
                 }
                 /**
                  *  Else try to execute a quantity of the order
@@ -60,24 +62,6 @@ public class SebMatchEngine {
         }
 
 
-    }
-
-    private OrderState addToBidDepth(double price, int volume) {
-        Integer currentBidVolume = orderBook.getAllBids().get(price);
-        if (currentBidVolume == null)
-            orderBook.setOneBid(price, volume);
-        else
-            orderBook.setOneBid(price, volume + currentBidVolume);
-        return OrderState.INS_CONF;
-    }
-
-    private OrderState addToAskDepth(double price, int volume) {
-        Integer currentAskVolume = orderBook.getAllAsks().get(price);
-        if (currentAskVolume == null)
-            orderBook.setOneAsk(price, volume);
-        else
-            orderBook.setOneAsk(price, volume + currentAskVolume);
-        return OrderState.INS_CONF;
     }
 
     private OrderState executeOrder(double price, int volume) {
