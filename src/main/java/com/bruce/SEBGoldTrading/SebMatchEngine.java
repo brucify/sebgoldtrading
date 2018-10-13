@@ -64,8 +64,9 @@ public class SebMatchEngine {
 
     }
 
-    private OrderState executeOrder(double price, int volume) {
+    private OrderState executeOrder(Side side, double price, int volume) {
         // TODO
+
         return OrderState.INS_FAIL;
     }
 }
