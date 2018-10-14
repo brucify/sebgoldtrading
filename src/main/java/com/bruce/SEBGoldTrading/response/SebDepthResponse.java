@@ -9,16 +9,10 @@ import java.util.Map;
 @ResponseStatus(value = HttpStatus.OK)
 public class SebDepthResponse {
 
-    private final long id;
     private final SebOrderBook orderBook;
 
-    public SebDepthResponse(long id, SebOrderBook orderBook) {
-        this.id = id;
+    public SebDepthResponse(SebOrderBook orderBook) {
         this.orderBook = orderBook;
-    }
-
-    public long getId() {
-        return this.id;
     }
 
     public Map getAllBids() {

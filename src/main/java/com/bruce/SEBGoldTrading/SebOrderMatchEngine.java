@@ -36,6 +36,9 @@ public class SebOrderMatchEngine implements Runnable {
         return orderBook;
     }
 
+    public ConcurrentHashMap<Long, SebOrder> getOrders() {
+        return orders;
+    }
 
     @Override
     public void run() {

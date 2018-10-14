@@ -10,9 +10,7 @@ public class SebOrderDispatcher {
     @Autowired
     private SebOrderMatchEngine matchEngine;
 
-    public SebOrderDispatcher() {
-        //matchEngine.start(Thread.currentThread().getThreadGroup());
-    }
+    public SebOrderDispatcher() { }
 
 
     /**

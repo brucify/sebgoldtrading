@@ -1,7 +1,6 @@
 package com.bruce.SEBGoldTrading.controller;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.bruce.SEBGoldTrading.SebOrder;
@@ -13,6 +12,7 @@ import com.bruce.SEBGoldTrading.response.SebTradeResponse;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,8 +22,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 public class SebTradingController {
-
-    private final AtomicLong counter = new AtomicLong(); //remove
 
     @Autowired
     private SebOrderMatchEngine matchEngine;
@@ -36,9 +34,20 @@ public class SebTradingController {
     public SebDepthResponse orderDepth() {
 
         return new SebDepthResponse(
-                counter.incrementAndGet(),
                 matchEngine.getOrderBook()
         );
+    }
+
+    @RequestMapping(value = "/orders", method = GET )
+    @ApiResponse(code = 200, message = "OK")
+    public ConcurrentHashMap<Long, SebOrder> orders() {
+        return matchEngine.getOrders();
+    }
+
+    @RequestMapping(value = "/orders/{order_id}", method = GET )
+    @ApiResponse(code = 200, message = "OK")
+    public SebOrder orders(@PathVariable("order_id") String order_id) {
+        return matchEngine.getOrders().get((Long.parseLong(order_id)));
     }
 
     @RequestMapping(value = "/orders", method = POST )
@@ -57,6 +66,8 @@ public class SebTradingController {
         // TODO send order to match engine
         return orderDispatcher.newOrder(side, price, volume);
     }
+
+
 
     @RequestMapping(value = "/trades", method = GET )
     @ApiResponse(code = 200, message = "OK")
