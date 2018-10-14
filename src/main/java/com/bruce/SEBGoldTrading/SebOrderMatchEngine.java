@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +19,8 @@ public class SebOrderMatchEngine implements Runnable {
     private final SebOrderBook orderBook;
     private BlockingQueue<SebOrder> incomingOrders;
     private ConcurrentHashMap<Long, SebOrder> orders;
+    private List<SebTrade> trades;
+
 
     @Autowired
     private SebOrderIdGenerator orderIdGenerator;
@@ -27,9 +31,10 @@ public class SebOrderMatchEngine implements Runnable {
      * Constructor
      */
     public SebOrderMatchEngine() {
-        orders = new ConcurrentHashMap<>();
-        incomingOrders = new ArrayBlockingQueue<>(maxOrderQueueSize);
         orderBook = new SebOrderBook();
+        incomingOrders = new ArrayBlockingQueue<>(maxOrderQueueSize);
+        orders = new ConcurrentHashMap<>();
+        trades = new ArrayList<>();
     }
 
     public SebOrderBook getOrderBook() {
@@ -38,6 +43,10 @@ public class SebOrderMatchEngine implements Runnable {
 
     public ConcurrentHashMap<Long, SebOrder> getOrders() {
         return orders;
+    }
+
+    public List<SebTrade> getTrades() {
+        return trades;
     }
 
     @Override
@@ -89,12 +98,12 @@ public class SebOrderMatchEngine implements Runnable {
      *
      * @param order
      */
-    public void process(SebOrder order) {
+    private void process(SebOrder order) {
 
-        int remainingVolume = order.getVolume();
+        Integer unprocessedVolume = order.getVolume();
 
-        while (remainingVolume != 0) {
-            remainingVolume = processOrder(order.getSide(), order.getPrice(), remainingVolume);
+        while (unprocessedVolume != 0) {
+            unprocessedVolume = processOrder(order, unprocessedVolume);
         }
 
         order.setActionState(SebOrder.ActionState.INS_CONF);
@@ -103,21 +112,23 @@ public class SebOrderMatchEngine implements Runnable {
 
     /**
      * Process the order immediately at the given price and given volume,
-     * modify the order book
+     * modify the order book. Return the volume that remains un-executed
      *
-     * @param side
-     * @param price
-     * @param volume
+     *
+     * @param order
+     * @param volume volume to be processed
      * @return remaining volume that is un-executed
      */
-    private Integer processOrder(SebOrder.Side side, double price, int volume) {
+    private Integer processOrder(SebOrder order, int volume) {
 
-        switch (side) {
+        double price = order.getPrice();
+
+        switch (order.getSide()) {
             case BUY:
 
                 double bestAsk = orderBook.getBestAsk();
 
-                if ( price < bestAsk ) {
+                if ( price < bestAsk || bestAsk == 0) {
                     /*
                      *  If new bid price is lower than the lowest ask,
                      *  just add it to the bid depth
@@ -129,13 +140,18 @@ public class SebOrderMatchEngine implements Runnable {
                      *  Else if bid price is equal or greater than lowest ask,
                      *  execute the order
                      **/
-                    return orderBook.executeBuyOrder(bestAsk, volume);
+                    Integer executedVolume = orderBook.executeBuyOrder(bestAsk, volume);
+
+                    SebTrade trade = new SebTrade(price, executedVolume);
+                    trades.add(trade);
+
+                    return volume - executedVolume;
                 }
             case SELL:
 
                 double bestBid = orderBook.getBestBid();
 
-                if ( bestBid < price ) {
+                if ( bestBid < price || bestBid == 0) {
                     /*
                      *  If new ask price is higher than the highest bid,
                      *  just add it to the ask depth
@@ -147,7 +163,12 @@ public class SebOrderMatchEngine implements Runnable {
                      *  Else if ask price is equal or lower than highest ask,
                      *  execute the order
                      **/
-                    return orderBook.executeSellOrder(bestBid, volume);
+                    Integer executedVolume = orderBook.executeSellOrder(bestBid, volume);
+
+                    SebTrade trade = new SebTrade(price, executedVolume);
+                    trades.add(trade);
+
+                    return volume - executedVolume;
                 }
             default:
                 return 0;

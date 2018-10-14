@@ -1,5 +1,7 @@
 package com.bruce.SEBGoldTrading;
 
+import java.sql.Timestamp;
+
 public class SebOrder {
 
     public enum Side {
@@ -28,6 +30,7 @@ public class SebOrder {
 
     private final long orderId;
     private ActionState actionState;
+    private final Timestamp timestamp;
 
 
     public SebOrder(Side side, double price, int volume, long orderId) {
@@ -35,6 +38,8 @@ public class SebOrder {
         this.price = price;
         this.volume = volume;
         this.orderId = orderId;
+
+        timestamp = new Timestamp(System.currentTimeMillis());
     }
 
     public Side getSide() {
@@ -57,7 +62,12 @@ public class SebOrder {
         return actionState;
     }
 
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
     public void setActionState(ActionState actionState) {
         this.actionState = actionState;
     }
+
 }

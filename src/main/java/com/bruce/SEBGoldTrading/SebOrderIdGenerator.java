@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 public class SebOrderIdGenerator {
 
-    private final AtomicLong counter = new AtomicLong();
+    private final AtomicLong counter = new AtomicLong(10000000);
 
     public SebOrderIdGenerator() { }
 

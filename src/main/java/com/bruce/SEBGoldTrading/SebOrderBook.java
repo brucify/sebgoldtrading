@@ -75,49 +75,47 @@ public class SebOrderBook {
     }
 
     /**
-     * Execute a buy order on a given price, modify the ask level
+     * Modify the ask level, deduct the volume at the given ask level
      *
      * @param price
      * @param volume
-     * @return volume that remains un-executed
+     * @return volume that has been executed
      */
     public Integer executeBuyOrder(double price, int volume) {
 
         Integer oldVolume = askDepth.get(price);
         int newVolume = oldVolume - volume;
 
-        if (newVolume > 0)
+        if (newVolume > 0) {
             setOneAsk(price, newVolume);
-        else
+            return volume;
+        } else {
             removeOneAsk(price);
+            return oldVolume;
+        }
 
-        if (newVolume >= 0)
-            return 0;
-        else
-            return -newVolume;
     }
 
     /**
-     * Execute a sell order on a given price, modify the bid level
+     * Modify the bid level, deduct the volume at the given bid level
      *
      * @param price
      * @param volume
-     * @return volume that remains un-executed
+     * @return volume that has been executed
      */
     public Integer executeSellOrder(double price, int volume) {
 
         Integer oldVolume = bidDepth.get(price);
         int newVolume = oldVolume - volume;
 
-        if (newVolume > 0)
+        if (newVolume > 0) {
             setOneBid(price, newVolume);
-        else
+            return volume;
+        } else {
             removeOneBid(price);
+            return oldVolume;
+        }
 
-        if (newVolume >= 0)
-            return 0;
-        else
-            return -newVolume;
     }
 
     /*
