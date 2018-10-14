@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.bruce.SEBGoldTrading.SebOrderDispatcher;
 import com.bruce.SEBGoldTrading.response.SebBadRequestException;
 import com.bruce.SEBGoldTrading.response.SebDepthResponse;
+import com.bruce.SEBGoldTrading.response.SebTradeResponse;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +38,13 @@ public class SebTradingController {
     @RequestMapping(value = "/orders", method = POST )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 400, message = "Bad request parameter")})
+            @ApiResponse(code = 400, message = "Bad request parameter")
+    })
     public ResponseEntity<SebOrderDispatcher.ActionState> orders(
             @RequestParam(value="side",     defaultValue="BUY") SebOrderDispatcher.Side side,
             @RequestParam(value="volume",   defaultValue="0") int volume,
-            @RequestParam(value="price",    defaultValue="0.0") double price) throws SebBadRequestException {
+            @RequestParam(value="price",    defaultValue="0.0") double price
+    ) throws SebBadRequestException {
 
         if (volume <= 0 || price <= 0) throw new SebBadRequestException();
 
@@ -52,11 +55,10 @@ public class SebTradingController {
 
     @RequestMapping(value = "/trades", method = GET )
     @ApiResponse(code = 200, message = "OK")
-    public SebDepthResponse trades() {
+    public SebTradeResponse trades() {
 
-        return new SebDepthResponse(
-                counter.incrementAndGet(),
-                orderDispatcher.getOrderBook()
+        return new SebTradeResponse(
+                //orderDispatcher.getTrades()
         );
     }
 }
