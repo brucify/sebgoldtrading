@@ -13,6 +13,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,7 +31,7 @@ public class SebGoldTradingApplicationTests {
     ObjectMapper mapper;
 
     @Test
-    public void depthShouldContainFields() throws Exception {
+    public void depthShouldContainFields() {
         String depthUrl = "http://localhost:" + port + "/depth";
         assertThat(this.restTemplate.getForObject(depthUrl, String.class))
                 .contains("bestBid")
@@ -40,7 +41,7 @@ public class SebGoldTradingApplicationTests {
     }
 
     @Test
-    public void newOrderShouldChangeDepth() throws Exception {
+    public void newOrderShouldChangeVolume() throws Exception {
         /*
           Given
          */
@@ -62,9 +63,8 @@ public class SebGoldTradingApplicationTests {
         String orderUrl = "http://localhost:" + port + "/orders";
         Double price = oldBestAsk;
         Integer volume = 5;
-        ResponseEntity<String> orderResponse = postOrder(orderUrl, "SELL", price, volume);
 
-        assertThat(orderResponse.getStatusCode())
+        assertThat(postOrder(orderUrl, "SELL", price, volume).getStatusCode())
                 .isEqualByComparingTo(HttpStatus.OK);
 
         /*
@@ -74,7 +74,32 @@ public class SebGoldTradingApplicationTests {
 
         assertThat(parseBestAskVolume(depthResponse))
                 .isEqualTo(oldBestAskVolume + volume);
+    }
 
+    @Test
+    public void newOrderShouldChangeDepth() throws Exception {
+        /*
+          Given
+         */
+        String depthUrl = "http://localhost:" + port + "/depth";
+        String depthResponse = this.restTemplate.getForObject(depthUrl, String.class);
+        double oldBestAsk = parseBestAsk(depthResponse);
+        int oldBestAskVolume = parseBestAskVolume(depthResponse);
+
+        /*
+          When
+         */
+        String orderUrl = "http://localhost:" + port + "/orders";
+
+        assertThat(postOrder(orderUrl, "BUY", oldBestAsk, oldBestAskVolume).getStatusCode())
+                .isEqualByComparingTo(HttpStatus.OK);
+
+        /*
+          Then
+         */
+        depthResponse = this.restTemplate.getForObject(depthUrl, String.class);
+
+        assertThat(parseBestAsk(depthResponse)).isNotEqualTo(oldBestAsk);
     }
 
 
