@@ -2,15 +2,32 @@ package com.bruce.SEBGoldTrading;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SebGoldTradingApplicationTests {
 
-	@Test
-	public void contextLoads() {
-	}
+    @LocalServerPort
+    private int port;
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    @Test
+    public void depthShouldContainFields() throws Exception {
+        String depthUrl = "http://localhost:" + port + "/depth";
+        assertThat(this.restTemplate.getForObject(depthUrl, String.class))
+                .contains("bestBid")
+                .contains("bestAsk")
+                .contains("allBids")
+                .contains("allAsks");
+    }
 
 }

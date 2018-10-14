@@ -26,7 +26,7 @@ public class SebTradingController {
 
     @RequestMapping(value = "/depth", method = GET )
     @ApiResponse(code = 200, message = "OK")
-    public SebDepthResponse orderBook() {
+    public SebDepthResponse orderDepth() {
 
         return new SebDepthResponse(
                 counter.incrementAndGet(),
@@ -34,11 +34,11 @@ public class SebTradingController {
         );
     }
 
-    @RequestMapping(value = "/order", method = POST )
+    @RequestMapping(value = "/orders", method = POST )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 400, message = "Bad request parameter")})
-    public ResponseEntity<SebOrderDispatcher.ActionState> order(
+    public ResponseEntity<SebOrderDispatcher.ActionState> orders(
             @RequestParam(value="side",     defaultValue="BUY") SebOrderDispatcher.Side side,
             @RequestParam(value="volume",   defaultValue="0") int volume,
             @RequestParam(value="price",    defaultValue="0.0") double price) throws SebBadRequestException {
@@ -48,5 +48,15 @@ public class SebTradingController {
         // TODO send order to match engine
         SebOrderDispatcher.ActionState state = orderDispatcher.newOrder(side, price, volume);
         return ResponseEntity.ok(state);
+    }
+
+    @RequestMapping(value = "/trades", method = GET )
+    @ApiResponse(code = 200, message = "OK")
+    public SebDepthResponse trades() {
+
+        return new SebDepthResponse(
+                counter.incrementAndGet(),
+                orderDispatcher.getOrderBook()
+        );
     }
 }
