@@ -41,7 +41,7 @@ public class SebGoldTradingApplicationTests {
     }
 
     @Test
-    public void newOrderShouldChangeVolume() throws Exception {
+    public void newOrderShouldIncrementVolume() throws Exception {
         /*
           Given
          */
@@ -54,7 +54,7 @@ public class SebGoldTradingApplicationTests {
                 .contains("allBids")
                 .contains("allAsks");
 
-        double oldBestAsk = parseBestAsk(depthResponse);
+        double oldBestAsk = parseResponse(depthResponse, "bestAsk");
         int oldBestAskVolume = parseBestAskVolume(depthResponse);
 
         /*
@@ -77,21 +77,22 @@ public class SebGoldTradingApplicationTests {
     }
 
     @Test
-    public void newOrderShouldChangeDepth() throws Exception {
+    public void newBuyOrderShouldChangeBestAsk() throws Exception {
         /*
           Given
          */
         String depthUrl = "http://localhost:" + port + "/depth";
         String depthResponse = this.restTemplate.getForObject(depthUrl, String.class);
-        double oldBestAsk = parseBestAsk(depthResponse);
+        double oldBestAsk = parseResponse(depthResponse, "bestAsk");
         int oldBestAskVolume = parseBestAskVolume(depthResponse);
 
         /*
           When
          */
         String orderUrl = "http://localhost:" + port + "/orders";
+        int extraVolume = 100;
 
-        assertThat(postOrder(orderUrl, "BUY", oldBestAsk, oldBestAskVolume).getStatusCode())
+        assertThat(postOrder(orderUrl, "BUY", oldBestAsk, oldBestAskVolume + extraVolume).getStatusCode())
                 .isEqualByComparingTo(HttpStatus.OK);
 
         /*
@@ -99,7 +100,9 @@ public class SebGoldTradingApplicationTests {
          */
         depthResponse = this.restTemplate.getForObject(depthUrl, String.class);
 
-        assertThat(parseBestAsk(depthResponse)).isNotEqualTo(oldBestAsk);
+        assertThat(parseResponse(depthResponse, "bestAsk")).isNotEqualTo(oldBestAsk);
+        assertThat(parseResponse(depthResponse, "bestBid")).isEqualTo(oldBestAsk);
+        assertThat(parseBestBidVolume(depthResponse)).isEqualTo(extraVolume);
     }
 
 
@@ -121,9 +124,9 @@ public class SebGoldTradingApplicationTests {
 
         return restTemplate.postForEntity( orderUrl, request , String.class );
     }
-
-    private Double parseBestAsk(String depthResponse) throws IOException {
-        String sBestAsk = mapper.readTree(depthResponse).get("bestAsk").toString();
+    
+    private Double parseResponse(String depthResponse, String fieldName) throws IOException {
+        String sBestAsk = mapper.readTree(depthResponse).get(fieldName).toString();
 
         return Double.parseDouble(sBestAsk);
     }
@@ -133,6 +136,13 @@ public class SebGoldTradingApplicationTests {
         String sBestAskVolume = mapper.readTree(depthResponse).get("allAsks").get(sBestAsk).toString();
 
         return Integer.parseInt(sBestAskVolume);
+    }
+
+    private Integer parseBestBidVolume(String depthResponse) throws IOException {
+        String sBestBid = mapper.readTree(depthResponse).get("bestBid").toString();
+        String sBestBidVolume = mapper.readTree(depthResponse).get("allBids").get(sBestBid).toString();
+
+        return Integer.parseInt(sBestBidVolume);
     }
 
 
