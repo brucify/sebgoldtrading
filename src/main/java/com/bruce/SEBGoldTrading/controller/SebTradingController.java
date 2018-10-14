@@ -1,5 +1,7 @@
 package com.bruce.SEBGoldTrading.controller;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.bruce.SEBGoldTrading.SebOrder;
@@ -11,7 +13,6 @@ import com.bruce.SEBGoldTrading.response.SebTradeResponse;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,7 +46,7 @@ public class SebTradingController {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 400, message = "Bad request parameter")
     })
-    public ResponseEntity<SebOrder.ActionState> orders(
+    public SebOrder orders(
             @RequestParam(value="side",     defaultValue="BUY") SebOrder.Side side,
             @RequestParam(value="volume",   defaultValue="0") int volume,
             @RequestParam(value="price",    defaultValue="0.0") double price
@@ -54,8 +55,7 @@ public class SebTradingController {
         if (volume <= 0 || price <= 0) throw new SebBadRequestException();
 
         // TODO send order to match engine
-        SebOrder.ActionState state = orderDispatcher.newOrder(side, price, volume);
-        return ResponseEntity.ok(state);
+        return orderDispatcher.newOrder(side, price, volume);
     }
 
     @RequestMapping(value = "/trades", method = GET )
