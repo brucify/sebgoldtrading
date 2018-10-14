@@ -3,6 +3,13 @@ SEB Gold Trading
 
 An Java application based on **spring-boot-starter**
 
+Order execution flow:
+
+
+![Alt text](./SEB%20Gold%20Trading.png "SEB Gold Trading")
+
+
+
 Building
 -----
 
