@@ -2,7 +2,9 @@ package com.bruce.SEBGoldTrading.controller;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.bruce.SEBGoldTrading.SebOrder;
 import com.bruce.SEBGoldTrading.SebOrderDispatcher;
+import com.bruce.SEBGoldTrading.SebOrderMatchEngine;
 import com.bruce.SEBGoldTrading.response.SebBadRequestException;
 import com.bruce.SEBGoldTrading.response.SebDepthResponse;
 import com.bruce.SEBGoldTrading.response.SebTradeResponse;
@@ -23,6 +25,9 @@ public class SebTradingController {
     private final AtomicLong counter = new AtomicLong(); //remove
 
     @Autowired
+    private SebOrderMatchEngine matchEngine;
+
+    @Autowired
     private SebOrderDispatcher orderDispatcher;
 
     @RequestMapping(value = "/depth", method = GET )
@@ -31,7 +36,7 @@ public class SebTradingController {
 
         return new SebDepthResponse(
                 counter.incrementAndGet(),
-                orderDispatcher.getOrderBook()
+                matchEngine.getOrderBook()
         );
     }
 
@@ -40,8 +45,8 @@ public class SebTradingController {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 400, message = "Bad request parameter")
     })
-    public ResponseEntity<SebOrderDispatcher.ActionState> orders(
-            @RequestParam(value="side",     defaultValue="BUY") SebOrderDispatcher.Side side,
+    public ResponseEntity<SebOrder.ActionState> orders(
+            @RequestParam(value="side",     defaultValue="BUY") SebOrder.Side side,
             @RequestParam(value="volume",   defaultValue="0") int volume,
             @RequestParam(value="price",    defaultValue="0.0") double price
     ) throws SebBadRequestException {
@@ -49,7 +54,7 @@ public class SebTradingController {
         if (volume <= 0 || price <= 0) throw new SebBadRequestException();
 
         // TODO send order to match engine
-        SebOrderDispatcher.ActionState state = orderDispatcher.newOrder(side, price, volume);
+        SebOrder.ActionState state = orderDispatcher.newOrder(side, price, volume);
         return ResponseEntity.ok(state);
     }
 
@@ -58,7 +63,7 @@ public class SebTradingController {
     public SebTradeResponse trades() {
 
         return new SebTradeResponse(
-                //orderDispatcher.getTrades()
+                //matchEngine.getTrades()
         );
     }
 }

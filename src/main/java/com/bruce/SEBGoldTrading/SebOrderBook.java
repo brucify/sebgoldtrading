@@ -75,7 +75,7 @@ public class SebOrderBook {
     }
 
     /**
-     * Execute a buy order on a given price
+     * Execute a buy order on a given price, modify the ask level
      *
      * @param price
      * @param volume
@@ -98,7 +98,7 @@ public class SebOrderBook {
     }
 
     /**
-     * Execute a sell order on a given price
+     * Execute a sell order on a given price, modify the bid level
      *
      * @param price
      * @param volume
