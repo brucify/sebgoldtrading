@@ -142,7 +142,7 @@ public class SebOrderMatchEngine implements Runnable {
                      **/
                     Integer executedVolume = orderBook.executeBuyOrder(bestAsk, volume);
 
-                    SebTrade trade = new SebTrade(price, executedVolume);
+                    SebTrade trade = new SebTrade(bestAsk, executedVolume);
                     trades.add(trade);
 
                     return volume - executedVolume;
@@ -165,7 +165,7 @@ public class SebOrderMatchEngine implements Runnable {
                      **/
                     Integer executedVolume = orderBook.executeSellOrder(bestBid, volume);
 
-                    SebTrade trade = new SebTrade(price, executedVolume);
+                    SebTrade trade = new SebTrade(bestBid, executedVolume);
                     trades.add(trade);
 
                     return volume - executedVolume;
